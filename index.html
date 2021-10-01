@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="data.js"></script>
+</head>
+<style>
+    canvas {
+        background-image: url("background.png");
+        background-size: cover;
+        border: 1px solid black;
+    }
+</style>
+<body>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+</br>
+<!--SCORE: <span id="score"></span></br>-->
+<!--<span>TIME LEFT: </span><span id="time"></span>-->
+<script>
+    let basketImg = new Image()
+    let eggImg = new Image()
+    basketImg.src = "basket.png"
+    eggImg.src = "egg.png"
+    let score = 0
+    let highScore = loadScore()
+
+    class Basket {
+        x;
+        y;
+        speedX;
+        speedY;
+        width;
+        height;
+
+        constructor(x, y, speedX, speedY) {
+
+            this.x = x
+            this.y = y
+            this.speedX = speedX
+            this.speedY = speedY
+            this.width = 100
+            this.height = 100
+        }
+
+        draw(ctx) {
+            ctx.beginPath();
+            ctx.drawImage(basketImg, this.x, this.y)
+            ctx.fill()
+            ctx.closePath()
+        }
+    }
+
+    class Egg {
+
+        x;
+        y;
+        speedX;
+        speedY;
+        width;
+        height;
+
+
+        constructor(x, y, speedY, speedX) {
+            this.x = x
+            this.y = y
+            this.speedX = speedX
+            this.speedY = speedY
+            this.width = 50
+            this.height = 33
+        }
+
+        draw(ctx) {
+            ctx.beginPath();
+            ctx.drawImage(eggImg, this.x, this.y)
+            ctx.fill()
+            ctx.closePath()
+        }
+
+        moveDown() {
+            this.y += this.speedY
+            this.checkDown()
+        }
+
+        checkDown() {
+            if (this.y >= 500) {
+                this.y = 0
+                // this.x = Math.random() * (500 - eggImg.height)
+            }
+        }
+    }
+
+    let ctx = document.getElementById('myCanvas').getContext('2d');
+    let ctx1 = document.getElementById('myCanvas').getContext('2d')
+
+    let basket = new Basket(250, 400, 25, 25)
+
+    let egg = new Egg(20, 20, +prompt('enter speed you want:  '+ '(recommened 5)'))
+
+    function game() {
+        ctx.clearRect(0, 0, 500, 500)
+        ctx.fillStyle = "purple"
+        ctx.textAlign = 'left'
+        ctx.font = "20px Arial";
+        ctx.fillText("Score: " + score, 0, 20);
+        ctx.fillText("Time Remaining: " + timeLeft, 0, 45);
+        ctx.fillText('High Score: ' + highScore, 300, 45)
+        basket.draw(ctx1)
+        if (timeLeft <= 0) {
+            clearInterval(time)
+            ctx.fillStyle = 'red'
+            ctx.textAlign = "center"
+            ctx.font = "bold 25px Arial";
+            ctx.fillText('GAME OVER/ PRESS ENTER TO RESTART', 250, 250)
+            if (score > highScore) {
+                saveScore(score)
+            }
+        } else {
+            egg.moveDown()
+            egg.draw(ctx1)
+            check();
+
+        }
+        requestAnimationFrame(game)
+    }
+
+    function imgTouching(x1, y1, img1, x2, y2, img2) {
+        if (x1 > x2 + img2.width || x1 + img1.width < x2 || y1 > y2 + img2.height || y1 + img1.height <= y2) {
+            return false;
+        }
+        return true
+    }
+
+    function check() {
+        if (imgTouching(basket.x, basket.y, basket, egg.x, egg.y, egg)) {
+            score = score + 1;
+            egg.speedY += 0.5
+            egg.y = 0
+            egg.x = Math.random() * (500 - eggImg.height)
+        }
+    }
+
+    let timeLeft = 20
+    let time = setInterval(function () {
+        if (timeLeft <= 0) {
+            clearInterval(time)
+        } else {
+            timeLeft -= 1
+        }
+
+    }, 1000);
+
+    window.addEventListener("keydown", move)
+
+    function move(event) {
+        if (event.keyCode === 37 && basket.x > 0) {
+            basket.x -= basket.speedX
+        }
+        if (event.keyCode === 39 && basket.x + basketImg.width < 500) {
+            basket.x += basket.speedX
+        }
+        if (event.keyCode === 13) {
+            reStart()
+        }
+        event.preventDefault()
+    }
+
+    function reStart() {
+        window.location.reload()
+
+
+    }
+
+    window.onload(game())
+
+
+</script>
+</body>
+</html>
